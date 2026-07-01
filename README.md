@@ -1,3 +1,4 @@
+
 # Digital Well-Being & Cognitive Fatigue Decision Bot
 
 ## Quick Start (5 minutes)
@@ -171,3 +172,196 @@ pip install Flask
 ## License
 
 MIT License - Free to use and modify
+=======
+# 🧠 Digital Well-Being & Cognitive Fatigue Bot
+
+An intelligent web application that helps users maintain healthy digital habits by monitoring screen time, analyzing cognitive fatigue, and providing personalized wellness recommendations.
+
+## 📌 Features
+
+- 📊 Real-time Digital Well-Being Dashboard
+- ⏱️ Screen Time Tracking
+- 🧠 Cognitive Fatigue Risk Analysis
+- ☕ Break Reminder System
+- 🌙 Late Night Usage Detection
+- 💬 AI Wellness Assistant
+- 📋 Activity Logging
+- 📈 Decision Logging
+- 🎯 Personalized Recommendations
+- 👁️ Eye Care & Productivity Tips
+
+---
+
+## 🚀 Technologies Used
+
+- HTML5
+- CSS3
+- JavaScript (Vanilla)
+
+---
+
+## 📷 Project Preview
+
+### Dashboard
+- Track daily screen time
+- Monitor fatigue level
+- Count breaks taken
+
+### Activity Logger
+Users can log:
+- Study
+- Work
+- Social Media
+- Entertainment
+- Break
+
+along with:
+- Duration
+- Time of Day
+
+---
+
+## 🧠 Cognitive Fatigue Analysis
+
+The application calculates fatigue based on:
+
+- Continuous screen usage
+- Total screen time
+- Number of breaks
+- Late-night sessions
+- Break-to-work ratio
+
+Risk Levels:
+
+- 🟢 Low Risk
+- 🟠 Moderate Risk
+- 🔴 High Risk
+
+---
+
+## 💬 AI Well-Being Assistant
+
+The chatbot can answer questions about:
+
+- Usage Summary
+- Break Recommendations
+- Eye Care
+- Sleep Tips
+- Productivity
+- Fatigue Analysis
+
+The assistant intentionally avoids:
+
+- Medical diagnosis
+- Mental health treatment
+- Device control
+
+---
+
+## 📋 Decision Log
+
+The system records:
+
+- Trigger event
+- Decision taken
+- Reasoning behind recommendation
+
+This improves transparency of the recommendation engine.
+
+---
+
+## 📂 Project Structure
+
+```
+Digital-WellBeing-Bot/
+│
+├── index.html
+└── README.md
+```
+
+---
+
+## ▶️ How to Run
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/Digital-WellBeing-Bot.git
+```
+
+2. Open the project folder.
+
+3. Double-click **index.html**
+
+or
+
+Open it using **Live Server** in Visual Studio Code.
+
+---
+
+## 📸 Screenshots
+
+Add screenshots here after uploading them.
+
+Example:
+
+```
+screenshots/dashboard.png
+screenshots/chatbot.png
+```
+
+---
+
+## 🔮 Future Improvements
+
+- User Login System
+- Firebase Integration
+- Data Persistence
+- Weekly Analytics
+- Monthly Reports
+- AI-powered Personalized Suggestions
+- Mobile Responsive Design
+- Dark Mode
+- Notification Support
+
+---
+
+## 🎯 Learning Outcomes
+
+This project demonstrates:
+
+- Frontend Web Development
+- DOM Manipulation
+- State Management
+- User Activity Tracking
+- Rule-Based AI
+- Cognitive Fatigue Analysis
+- Human-Computer Interaction
+- Digital Wellness Concepts
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome.
+
+Feel free to fork the repository and submit a Pull Request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
+
+**Prakash**
+
+3rd Year Computer Science Engineering Student
+
+SRM TRP Engineering College
+
+GitHub: https://github.com/yourusername
+

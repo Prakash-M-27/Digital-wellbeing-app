@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Well-Being & Cognitive Fatigue Bot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        h1 { color: #667eea; margin-bottom: 20px; font-size: 24px; }
+        h2 { color: #333; margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #667eea; padding-bottom: 8px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #555; font-weight: 600; }
+        input, select { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        button { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 10px; transition: 0.3s; }
+        button:hover { background: #5568d3; transform: translateY(-2px); }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .stat-value { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 12px; opacity: 0.9; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid; }
+        .alert-danger { background: #fee; border-color: #f00; color: #c00; }
+        .alert-warning { background: #ffeaa7; border-color: #fdcb6e; color: #d63031; }
+        .alert-success { background: #d4edda; border-color: #28a745; color: #155724; }
+        .alert-info { background: #d1ecf1; border-color: #17a2b8; color: #0c5460; }
+        .chat-box { height: 300px; overflow-y: auto; border: 2px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 10px; background: #f9f9f9; }
+        .chat-message { margin-bottom: 12px; padding: 10px; border-radius: 8px; }
+        .bot-message { background: #e3f2fd; margin-right: 20%; }
+        .user-message { background: #f3e5f5; margin-left: 20%; text-align: right; }
+        .log-entry { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #667eea; font-size: 13px; }
+        .log-time { color: #888; font-size: 11px; }
+        .recommendations { margin-top: 15px; }
+        .recommendation { background: #e8f5e9; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #4caf50; }
+        .fatigue-meter { width: 100%; height: 30px; background: #ddd; border-radius: 15px; overflow: hidden; margin: 15px 0; }
+        .fatigue-level { height: 100%; transition: width 0.5s, background 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .activity-list { max-height: 200px; overflow-y: auto; }
+        .activity-item { background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel">
+            <h1>🧠 Digital Well-Being Dashboard</h1>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalScreenTime">0h</div>
+                    <div class="stat-label">Screen Time Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="breakCount">0</div>
+                    <div class="stat-label">Breaks Taken</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="fatigueScore">0%</div>
+                    <div class="stat-label">Fatigue Risk</div>
+                </div>
+            </div>
+
+            <h2>Cognitive Fatigue Level</h2>
+            <div class="fatigue-meter">
+                <div class="fatigue-level" id="fatigueMeter" style="width: 0%; background: #4caf50;">Low Risk</div>
+            </div>
+
+            <h2>📊 Log Activity</h2>
+            <div class="input-group">
+                <label>Activity Type</label>
+                <select id="activityType">
+                    <option value="study">Study/Learning</option>
+                    <option value="work">Work</option>
+                    <option value="social">Social Media</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="break">Break</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Duration (minutes)</label>
+                <input type="number" id="duration" value="30" min="1">
+            </div>
+            <div class="input-group">
+                <label>Time of Day</label>
+                <select id="timeOfDay">
+                    <option value="morning">Morning (6AM-12PM)</option>
+                    <option value="afternoon">Afternoon (12PM-6PM)</option>
+                    <option value="evening">Evening (6PM-10PM)</option>
+                    <option value="latenight">Late Night (10PM-6AM)</option>
+                </select>
+            </div>
+            <button onclick="logActivity()">Log Activity</button>
+
+            <h2 style="margin-top: 20px;">Recent Activities</h2>
+            <div class="activity-list" id="activityList"></div>
+
+            <div id="alerts" style="margin-top: 20px;"></div>
+        </div>
+
+        <div class="panel">
+            <h2>💬 AI Well-Being Assistant</h2>
+            <div class="chat-box" id="chatBox"></div>
+            <input type="text" id="chatInput" placeholder="Ask me about your digital wellness..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+
+            <h2 style="margin-top: 20px;">✨ Personalized Recommendations</h2>
+            <div class="recommendations" id="recommendations"></div>
+
+            <h2 style="margin-top: 20px;">📋 Decision Log</h2>
+            <div id="decisionLog" style="max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            activities: [],
+            totalScreenTime: 0,
+            breakCount: 0,
+            fatigueScore: 0,
+            lastBreakTime: null,
+            consecutiveWorkMinutes: 0,
+            lateNightSessions: 0
+        };
+
+        addBotMessage("👋 Hello! I'm your Digital Well-Being Assistant. I'll help you maintain healthy digital habits. Start by logging your activities!");
+
+        function logActivity() {
+            const type = document.getElementById('activityType').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const timeOfDay = document.getElementById('timeOfDay').value;
+
+            const activity = {
+                type,
+                duration,
+                timeOfDay,
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            state.activities.push(activity);
+
+            if (type === 'break') {
+                state.breakCount++;
+                state.consecutiveWorkMinutes = 0;
+                state.lastBreakTime = Date.now();
+            } else {
+                state.totalScreenTime += duration;
+                state.consecutiveWorkMinutes += duration;
+            }
+
+            if (timeOfDay === 'latenight' && type !== 'break') {
+                state.lateNightSessions++;
+            }
+
+            updateDashboard();
+            analyzeAndRecommend(activity);
+            updateActivityList();
+        }
+
+        function updateDashboard() {
+            const hours = Math.floor(state.totalScreenTime / 60);
+            const mins = state.totalScreenTime % 60;
+            document.getElementById('totalScreenTime').textContent = `${hours}h ${mins}m`;
+            document.getElementById('breakCount').textContent = state.breakCount;
+
+            let fatigue = 0;
+            
+            if (state.consecutiveWorkMinutes > 120) fatigue += 40;
+            else if (state.consecutiveWorkMinutes > 90) fatigue += 30;
+            else if (state.consecutiveWorkMinutes > 60) fatigue += 20;
+
+            if (state.totalScreenTime > 480) fatigue += 30;
+            else if (state.totalScreenTime > 360) fatigue += 20;
+            else if (state.totalScreenTime > 240) fatigue += 10;
+
+            if (state.lateNightSessions > 2) fatigue += 20;
+            else if (state.lateNightSessions > 0) fatigue += 10;
+
+            const breakRatio = state.totalScreenTime > 0 ? (state.breakCount / (state.totalScreenTime / 60)) : 1;
+            if (breakRatio < 0.5) fatigue += 15;
+
+            state.fatigueScore = Math.min(fatigue, 100);
+            document.getElementById('fatigueScore').textContent = `${state.fatigueScore}%`;
+
+            const meter = document.getElementById('fatigueMeter');
+            meter.style.width = `${state.fatigueScore}%`;
+            
+            if (state.fatigueScore < 30) {
+                meter.style.background = '#4caf50';
+                meter.textContent = 'Low Risk';
+            } else if (state.fatigueScore < 60) {
+                meter.style.background = '#ff9800';
+                meter.textContent = 'Moderate Risk';
+            } else {
+                meter.style.background = '#f44336';
+                meter.textContent = 'High Risk';
+            }
+        }
+
+        function analyzeAndRecommend(activity) {
+            const alerts = document.getElementById('alerts');
+            const recommendations = document.getElementById('recommendations');
+            alerts.innerHTML = '';
+            recommendations.innerHTML = '';
+
+            let decisions = [];
+
+            if (state.consecutiveWorkMinutes >= 90) {
+                alerts.innerHTML += `<div class="alert alert-danger">⚠️ <strong>High Fatigue Risk:</strong> You've been working for ${state.consecutiveWorkMinutes} minutes without a break!</div>`;
+                recommendations.innerHTML += `<div class="recommendation">🧘 <strong>Immediate Break Needed:</strong> Take a 15-minute break. Try the 20-20-20 rule: Look at something 20 feet away for 20 seconds every 20 minutes.</div>`;
+                decisions.push({
+                    trigger: `Continuous usage: ${state.consecutiveWorkMinutes} minutes`,
+                    decision: 'Immediate break recommended',
+                    reasoning: 'Extended screen time without breaks increases cognitive fatigue and eye strain'
+                });
+            } else if (state.consecutiveWorkMinutes >= 60) {
+                alerts.innerHTML += `<div class="alert alert-warning">⚡ <strong>Moderate Fatigue:</strong> Consider taking a break soon.</div>`;
+                recommendations.innerHTML += `<div class="recommendation">💧 <strong>Hydration Reminder:</strong> Drink water and stretch for 5 minutes.</div>`;
+                decisions.push({
+                    trigger: `Continuous usage: ${state.consecutiveWorkMinutes} minutes`,
+                    decision: 'Break suggested within 30 minutes',
+                    reasoning: 'Approaching recommended maximum continuous screen time'
+                });
+            }
+
+            if (state.lateNightSessions > 0 && activity.timeOfDay === 'latenight') {
+                alerts.innerHTML += `<div class="alert alert-warning">🌙 <strong>Late Night Activity Detected:</strong> Working late can disrupt sleep patterns.</div>`;
+                recommendations.innerHTML += `<div class="recommendation">😴 <strong>Sleep Hygiene:</strong> Consider wrapping up soon. Blue light exposure before bed affects sleep quality.</div>`;
+                decisions.push({
+                    trigger: `Late night session detected (${state.lateNightSessions} total)`,
+                    decision: 'Recommend ending session soon',
+                    reasoning: 'Late-night screen exposure disrupts circadian rhythm and sleep quality'
+                });
+            }
+
+            if (state.totalScreenTime > 360 && state.breakCount < 3) {
+                recommendations.innerHTML += `<div class="recommendation">⏰ <strong>Workload Balance:</strong> You've logged ${Math.floor(state.totalScreenTime/60)}+ hours with only ${state.breakCount} breaks. Schedule more frequent breaks.</div>`;
+                decisions.push({
+                    trigger: `High screen time (${state.totalScreenTime} min) with low breaks (${state.breakCount})`,
+                    decision: 'Increase break frequency',
+                    reasoning: 'Break-to-work ratio is below healthy threshold (recommended: 1 break per hour)'
+                });
+            }
+
+            if (state.fatigueScore >= 70) {
+                alerts.innerHTML += `<div class="alert alert-danger">🚨 <strong>Critical Fatigue Level:</strong> Your cognitive fatigue risk is at ${state.fatigueScore}%!</div>`;
+                recommendations.innerHTML += `<div class="recommendation">🛑 <strong>Extended Break Required:</strong> Take a 30-minute break away from screens. Go for a walk or practice mindfulness.</div>`;
+                decisions.push({
+                    trigger: `Fatigue score: ${state.fatigueScore}%`,
+                    decision: 'Extended break mandatory',
+                    reasoning: 'Multiple risk factors detected: prolonged usage, insufficient breaks, and/or late-night activity'
+                });
+            } else if (state.fatigueScore < 30 && state.activities.length > 3) {
+                alerts.innerHTML += `<div class="alert alert-success">✅ <strong>Great Job!</strong> You're maintaining healthy digital habits.</div>`;
+            }
+
+            decisions.forEach(d => logDecision(d));
+        }
+
+        function logDecision(decision) {
+            const log = document.getElementById('decisionLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <div class="log-time">${new Date().toLocaleTimeString()}</div>
+                <strong>Trigger:</strong> ${decision.trigger}<br>
+                <strong>Decision:</strong> ${decision.decision}<br>
+                <strong>Reasoning:</strong> ${decision.reasoning}
+            `;
+            log.insertBefore(entry, log.firstChild);
+        }
+
+        function updateActivityList() {
+            const list = document.getElementById('activityList');
+            list.innerHTML = '';
+            state.activities.slice(-5).reverse().forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <span><strong>${activity.type.toUpperCase()}</strong> - ${activity.duration} min</span>
+                    <span>${activity.timestamp}</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addUserMessage(message);
+            input.value = '';
+
+            setTimeout(() => {
+                const response = generateResponse(message.toLowerCase());
+                addBotMessage(response);
+            }, 500);
+        }
+
+        function generateResponse(message) {
+            if (message.includes('diagnose') || message.includes('depression') || message.includes('anxiety') || message.includes('mental health')) {
+                return "⚠️ I cannot provide medical diagnosis or mental health treatment. I'm designed to help with digital wellness habits only. Please consult a healthcare professional for medical concerns.";
+            }
+
+            if (message.includes('lock') || message.includes('block') || message.includes('control my device')) {
+                return "🚫 I cannot control your device or enforce screen locks. I provide recommendations and insights to help you make informed decisions about your digital habits.";
+            }
+
+            if (message.includes('summary') || message.includes('how am i doing')) {
+                return `📊 Today's Summary:\n• Screen Time: ${Math.floor(state.totalScreenTime/60)}h ${state.totalScreenTime%60}m\n• Breaks: ${state.breakCount}\n• Fatigue Risk: ${state.fatigueScore}%\n• Status: ${state.fatigueScore < 30 ? 'Healthy' : state.fatigueScore < 60 ? 'Moderate concern' : 'High risk - take action!'}`;
+            }
+
+            if (message.includes('break') || message.includes('rest')) {
+                return "🧘 Break Recommendations:\n• 20-20-20 Rule: Every 20 min, look 20 feet away for 20 sec\n• Micro-breaks: 5 min every hour\n• Extended break: 15-30 min every 2-3 hours\n• Physical activity: Stretch, walk, or exercise";
+            }
+
+            if (message.includes('sleep') || message.includes('night')) {
+                return "😴 Sleep & Screen Time Tips:\n• Avoid screens 1-2 hours before bed\n• Use blue light filters in evening\n• Keep devices out of bedroom\n• Maintain consistent sleep schedule\n• Late-night sessions detected: " + state.lateNightSessions;
+            }
+
+            if (message.includes('eye') || message.includes('strain')) {
+                return "👁️ Eye Care Tips:\n• Blink frequently to prevent dryness\n• Adjust screen brightness to match surroundings\n• Position screen 20-26 inches away\n• Use artificial tears if needed\n• Follow the 20-20-20 rule";
+            }
+
+            if (message.includes('productivity') || message.includes('focus')) {
+                return "🎯 Productivity Tips:\n• Work in 90-minute focused blocks\n• Take breaks between sessions\n• Current consecutive work time: " + state.consecutiveWorkMinutes + " min\n• Recommended: Break every 60-90 minutes\n• Your break frequency: " + (state.totalScreenTime > 0 ? (state.breakCount / (state.totalScreenTime / 60)).toFixed(2) : 0) + " breaks/hour";
+            }
+
+            if (message.includes('fatigue') || message.includes('tired')) {
+                return `🧠 Fatigue Analysis:\n• Current Risk Level: ${state.fatigueScore}%\n• Contributing Factors:\n  - Continuous usage: ${state.consecutiveWorkMinutes} min\n  - Total screen time: ${state.totalScreenTime} min\n  - Late night sessions: ${state.lateNightSessions}\n  - Breaks taken: ${state.breakCount}\n\nRecommendation: ${state.fatigueScore > 60 ? 'Take an extended break now!' : state.fatigueScore > 30 ? 'Schedule a break soon' : 'Keep up the good work!'}`;
+            }
+
+            if (message.includes('help') || message.includes('what can you do')) {
+                return "🤖 I can help you with:\n• Usage summaries and statistics\n• Break and wellness recommendations\n• Eye care and ergonomics tips\n• Sleep hygiene advice\n• Productivity and focus strategies\n• Fatigue risk analysis\n\nJust ask me anything about your digital wellness!";
+            }
+
+            return "I'm here to help with your digital wellness! Ask me about:\n• Your usage summary\n• Break recommendations\n• Sleep tips\n• Eye care\n• Productivity advice\n• Fatigue analysis";
+        }
+
+        function addUserMessage(text) {
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = 'chat-message user-message';
+            msg.textContent = text;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function addBotMessage(text) {
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = 'chat-message bot-message';
+            msg.innerHTML = text.replace(/\n/g, '<br>');
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
