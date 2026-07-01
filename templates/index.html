@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Well-Being Bot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: white; text-align: center; margin-bottom: 30px; font-size: 2.5em; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .card h2 { color: #667eea; margin-bottom: 15px; font-size: 1.5em; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+        .stat { display: flex; justify-content: space-between; padding: 12px; margin: 8px 0; background: #f8f9fa; border-radius: 8px; }
+        .stat-label { font-weight: 600; color: #555; }
+        .stat-value { font-weight: bold; color: #667eea; font-size: 1.1em; }
+        .fatigue-meter { height: 30px; background: #e0e0e0; border-radius: 15px; overflow: hidden; margin: 15px 0; }
+        .fatigue-level { height: 100%; background: linear-gradient(90deg, #4caf50, #ffc107, #f44336); transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
+        select, input, button { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em; }
+        button { background: #667eea; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #5568d3; transform: translateY(-2px); }
+        .risk { padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 4px solid; }
+        .risk.high { background: #ffebee; border-color: #f44336; }
+        .risk.medium { background: #fff3e0; border-color: #ff9800; }
+        .risk.low { background: #e8f5e9; border-color: #4caf50; }
+        .recommendation { background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #2196f3; }
+        .recommendation h4 { color: #1976d2; margin-bottom: 8px; }
+        .tips { font-size: 0.9em; color: #666; margin-top: 8px; }
+        .chat-box { height: 300px; overflow-y: auto; border: 2px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 8px; }
+        .user-message { background: #667eea; color: white; margin-left: 20%; }
+        .bot-message { background: #e0e0e0; margin-right: 20%; }
+        .log-entry { background: #f5f5f5; padding: 12px; margin: 8px 0; border-radius: 8px; font-size: 0.9em; border-left: 3px solid #667eea; }
+        .timestamp { color: #999; font-size: 0.85em; }
+        .activity-item { display: flex; justify-content: space-between; padding: 8px; background: #f8f9fa; margin: 5px 0; border-radius: 5px; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold; }
+        .badge.study { background: #e3f2fd; color: #1976d2; }
+        .badge.work { background: #f3e5f5; color: #7b1fa2; }
+        .badge.social { background: #e8f5e9; color: #388e3c; }
+        .badge.break { background: #fff3e0; color: #f57c00; }
+        .advice-card { background: #fff9c4; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #fbc02d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Digital Well-Being & Cognitive Fatigue Bot</h1>
+        
+        <div class="grid">
+            <!-- Activity Logger -->
+            <div class="card">
+                <h2>📊 Log Activity</h2>
+                <div class="form-group">
+                    <label>Activity Type:</label>
+                    <select id="activityType">
+                        <option value="study">Study/Learning</option>
+                        <option value="work">Work</option>
+                        <option value="social">Social Media</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="break">Break</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duration (minutes):</label>
+                    <input type="number" id="duration" value="30" min="1">
+                </div>
+                <button onclick="logActivity()">Log Activity</button>
+                <div id="activityFeedback" style="margin-top: 15px;"></div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="card">
+                <h2>📈 Dashboard</h2>
+                <div class="stat">
+                    <span class="stat-label">Total Screen Time:</span>
+                    <span class="stat-value" id="totalScreenTime">0 hrs</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Breaks Taken:</span>
+                    <span class="stat-value" id="totalBreaks">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Continuous Hours:</span>
+                    <span class="stat-value" id="continuousHours">0 hrs</span>
+                </div>
+                <label style="margin-top: 15px;">Fatigue Level:</label>
+                <div class="fatigue-meter">
+                    <div class="fatigue-level" id="fatigueLevel" style="width: 0%">0%</div>
+                </div>
+                <div id="activityBreakdown"></div>
+            </div>
+
+            <!-- Risks & Recommendations -->
+            <div class="card">
+                <h2>⚠️ Risks & Recommendations</h2>
+                <div id="risksContainer">
+                    <p style="color: #999; text-align: center;">No risks detected yet. Start logging activities!</p>
+                </div>
+                <div id="recommendationsContainer"></div>
+            </div>
+
+            <!-- Chat Assistant -->
+            <div class="card">
+                <h2>💬 Well-Being Assistant</h2>
+                <div class="chat-box" id="chatBox">
+                    <div class="message bot-message">
+                        <strong>Bot:</strong> Hi! I'm your digital well-being assistant. Ask me about your usage, tips, breaks, or fatigue levels!
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                </div>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+
+            <!-- Workload Advisor -->
+            <div class="card">
+                <h2>⚖️ Workload Balance Advisor</h2>
+                <div id="workloadAdvice">
+                    <p style="color: #999; text-align: center;">Loading workload analysis...</p>
+                </div>
+                <button onclick="getWorkloadAdvice()" style="margin-top: 15px;">Refresh Analysis</button>
+            </div>
+
+            <!-- Decision Logs -->
+            <div class="card">
+                <h2>📋 Decision Logs</h2>
+                <div id="logsContainer" style="max-height: 400px; overflow-y: auto;">
+                    <p style="color: #999; text-align: center;">No logs yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateDashboard() {
+            fetch('/api/dashboard')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('totalScreenTime').textContent = data.total_screen_time + ' hrs';
+                    document.getElementById('totalBreaks').textContent = data.total_breaks;
+                    document.getElementById('continuousHours').textContent = data.continuous_hours + ' hrs';
+                    
+                    const fatigueLevel = Math.round(data.fatigue_level);
+                    document.getElementById('fatigueLevel').style.width = fatigueLevel + '%';
+                    document.getElementById('fatigueLevel').textContent = fatigueLevel + '%';
+                    
+                    // Activity breakdown
+                    let breakdown = '<h3 style="margin-top: 15px; color: #555;">Activity Breakdown:</h3>';
+                    for (let [type, duration] of Object.entries(data.activity_breakdown)) {
+                        breakdown += `<div class="activity-item">
+                            <span class="badge ${type}">${type}</span>
+                            <span>${(duration/60).toFixed(1)} hrs</span>
+                        </div>`;
+                    }
+                    document.getElementById('activityBreakdown').innerHTML = breakdown;
+                });
+        }
+
+        function logActivity() {
+            const type = document.getElementById('activityType').value;
+            const duration = document.getElementById('duration').value;
+            
+            fetch('/api/activity', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type, duration})
+            })
+            .then(r => r.json())
+            .then(data => {
+                // Show feedback
+                let feedback = `<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">
+                    <strong>✓ Activity Logged!</strong><br>
+                    Fatigue Score: ${data.fatigue_score}/100
+                </div>`;
+                document.getElementById('activityFeedback').innerHTML = feedback;
+                
+                // Update risks
+                if (data.risks.length > 0) {
+                    let risksHtml = '<h3 style="color: #f44336; margin-bottom: 10px;">⚠️ Detected Risks:</h3>';
+                    data.risks.forEach(risk => {
+                        risksHtml += `<div class="risk ${risk.severity}">
+                            <strong>${risk.type.toUpperCase()}</strong><br>
+                            ${risk.reason}
+                        </div>`;
+                    });
+                    document.getElementById('risksContainer').innerHTML = risksHtml;
+                } else {
+                    document.getElementById('risksContainer').innerHTML = '<p style="color: #4caf50;">✓ No risks detected</p>';
+                }
+                
+                // Update recommendations
+                if (data.recommendations.length > 0) {
+                    let recHtml = '<h3 style="color: #2196f3; margin: 15px 0 10px 0;">💡 Recommendations:</h3>';
+                    data.recommendations.forEach(rec => {
+                        recHtml += `<div class="recommendation">
+                            <h4>${rec.action}</h4>
+                            <p><em>Reason: ${rec.reason}</em></p>
+                            <div class="tips">Tips: ${rec.tips.join(' • ')}</div>
+                        </div>`;
+                    });
+                    document.getElementById('recommendationsContainer').innerHTML = recHtml;
+                }
+                
+                updateDashboard();
+                updateLogs();
+                getWorkloadAdvice();
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<div class="message user-message"><strong>You:</strong> ${message}</div>`;
+            input.value = '';
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message})
+            })
+            .then(r => r.json())
+            .then(data => {
+                chatBox.innerHTML += `<div class="message bot-message">
+                    <strong>Bot:</strong> ${data.response}<br>
+                    <small style="color: #666;"><em>Explanation: ${data.explanation}</em></small>
+                </div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        function updateLogs() {
+            fetch('/api/logs')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.logs.length === 0) return;
+                    
+                    let logsHtml = '';
+                    data.logs.reverse().forEach(log => {
+                        logsHtml += `<div class="log-entry">
+                            <div class="timestamp">${new Date(log.timestamp).toLocaleString()}</div>
+                            <strong>Activity:</strong> ${log.activity.type} (${log.activity.duration} min)<br>
+                            <strong>Fatigue Score:</strong> ${log.fatigue_score}/100<br>
+                            <strong>Risks:</strong> ${log.risks_detected.length}<br>
+                            <strong>Explanation:</strong> ${log.explanation}
+                        </div>`;
+                    });
+                    document.getElementById('logsContainer').innerHTML = logsHtml;
+                });
+        }
+
+        function getWorkloadAdvice() {
+            fetch('/api/workload')
+                .then(r => r.json())
+                .then(data => {
+                    let html = '';
+                    if (data.advice) {
+                        data.advice.forEach(item => {
+                            if (item.message) {
+                                html += `<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center; color: #2e7d32; font-weight: bold;">
+                                    ✓ ${item.message}
+                                </div>`;
+                            } else {
+                                html += `<div class="advice-card">
+                                    <strong>Issue:</strong> ${item.issue}<br>
+                                    <strong>Suggestion:</strong> ${item.suggestion}<br>
+                                    <small><em>Reason: ${item.reason}</em></small>
+                                </div>`;
+                            }
+                        });
+                    }
+                    document.getElementById('workloadAdvice').innerHTML = html;
+                });
+        }
+
+        // Initialize
+        updateDashboard();
+        getWorkloadAdvice();
+        setInterval(updateDashboard, 30000); // Update every 30 seconds
+    </script>
+</body>
+</html>
